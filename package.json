@@ -20,7 +20,8 @@
     "http-status-codes": "^2.2.0",
     "joi": "^17.6.3",
     "pg": "^8.8.0",
-    "string-strip-html": "^11.6.10"
+    "string-strip-html": "^11.6.10",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

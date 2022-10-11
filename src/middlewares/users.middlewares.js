@@ -10,10 +10,14 @@ async function newUserValidations(req, res, next) {
         password: joi.string().min(4).max(12).required(),
         confirmPassword: joi.string().min(4).max(12).required()
     })
-    req.body.name = stripHtml(req.body.name).result.trim();
-    req.body.email = stripHtml(req.body.email).result.trim();
-    req.body.password = stripHtml(req.body.password).result.trim();
-    req.body.confirmPassword = stripHtml(req.body.confirmPassword).result.trim();
+    try {
+        req.body.name = stripHtml(req.body.name).result.trim();
+        req.body.email = stripHtml(req.body.email).result.trim();
+        req.body.password = stripHtml(req.body.password).result.trim();
+        req.body.confirmPassword = stripHtml(req.body.confirmPassword).result.trim();
+    } catch (error) {
+        console.log(error.message);
+    }
 
     const { name, email, password, confirmPassword } = req.body;
     if (password !== confirmPassword) {
@@ -42,4 +46,22 @@ async function newUserValidations(req, res, next) {
     next()
 }
 
-export {newUserValidations}
+async function signinValidations(req,res,next){
+    const signinSchema = joi.object({
+        email: joi.string().email().required(),
+        password: joi.string().min(4).max(12).required()
+    })
+    const {email,password} = req.body;
+    const validSignin = {
+        email:email,
+        password:password
+    }
+    const validation = signinSchema.validate(validSignin,{abortEarly:false})
+    if(validation.error){
+        const errors = validation.error.details.map(detail=>detail.message);
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(errors);
+    }
+    next()
+}
+
+export {newUserValidations,signinValidations}
