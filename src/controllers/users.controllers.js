@@ -57,6 +57,7 @@ async function getUserInfo(req, res) {
             ('SELECT "id","shortUrl","url","visitCount" FROM "URLs" WHERE "userId"=$1',[userId])).rows;
         
         userInfo.shortenedUrls = userShortenedUrls;
+        userInfo.visitCount = Number(userInfo.visitCount);
         return res.status(StatusCodes.OK).send(userInfo);
     } catch (error) {
         console.log(error.message);
