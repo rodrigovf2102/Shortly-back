@@ -11,8 +11,15 @@ async function postNewUser(req, res) {
         password: bcrypt.hashSync(password, 12)
     }
     try {
-        await connection.query('INSERT INTO users (name,email,password) VALUES ($1,$2,$3);',
+       await connection.query('INSERT INTO users (name,email,password) VALUES ($1,$2,$3);',
             [newUser.name, newUser.email, newUser.password]);
+
+        const userId = (await connection.query('SELECT id FROM users WHERE email=$1',[email])).rows[0].id;
+        await connection.query('INSERT INTO "URLs" ("userId","visitCount") VALUES ($1,$2)',[userId,0]);
+
+        const urlId = (await connection.query('SELECT id FROM "URLs" WHERE "userId"=$1',[userId])).rows[0].id;
+        await connection.query('INSERT INTO "userUrls" ("userId","urlId") VALUES ($1,$2)',[userId,urlId]);
+
         return res.sendStatus(StatusCodes.CREATED);
     } catch (error) {
         console.log(error.message);
@@ -54,10 +61,12 @@ async function getUserInfo(req, res) {
             FROM "URLs" JOIN users ON "URLs"."userId"=users.id 
             WHERE users.id=$1 GROUP BY "URLs"."userId",users.name;`,[userId])).rows[0];
         const userShortenedUrls = (await connection.query
-            ('SELECT "id","shortUrl","url","visitCount" FROM "URLs" WHERE "userId"=$1',[userId])).rows;
-        
-        userInfo.shortenedUrls = userShortenedUrls;
-        userInfo.visitCount = Number(userInfo.visitCount);
+            (`SELECT "id","shortUrl","url","visitCount" FROM "URLs" 
+            WHERE "userId"=$1 AND url IS NOT NULL`,[userId])).rows;
+        if(userShortenedUrls.length>0){
+            userInfo.shortenedUrls = userShortenedUrls;
+            userInfo.visitCount = Number(userInfo.visitCount);
+        }
         return res.status(StatusCodes.OK).send(userInfo);
     } catch (error) {
         console.log(error.message);

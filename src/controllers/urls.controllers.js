@@ -29,15 +29,17 @@ async function getUrls(req, res) {
     const { id } = req.params;
     const urlId = Number(id);
     if (isNaN(urlId) || urlId % 1 !== 0) {
-        return res.status(StatusCodes.NOT_FOUND).send('Error: url identification is a integer number');
+        return res.status(StatusCodes.NOT_FOUND).send('Error: url identification must be integer number');
     }
     try {
-        const url = (await connection.query('SELECT * FROM "URLs" WHERE id=$1', [urlId])).rows[0];
+        const url = (await connection.query('SELECT * FROM "URLs" WHERE id=$1 AND url IS NOT NULL', [urlId])).rows[0];
+        console.log(url)
         if (!url) {
             return res.status(StatusCodes.NOT_FOUND).send('Error: url id not found');
         }
         delete url.userId;
         delete url.visitCount;
+        delete url.createdAt;
         return res.status(StatusCodes.OK).send(url);
     } catch (error) {
         console.log(error.message);
@@ -47,6 +49,9 @@ async function getUrls(req, res) {
 
 async function redirectToUrl(req, res) {
     const { shortUrl } = req.params;
+    if(shortUrl === null){
+        return res.status(StatusCodes.NOT_FOUND).send('Error: url not found');
+    }
     try {
         const url = (await connection.query
             ('SELECT * FROM "URLs" WHERE "shortUrl"=$1', [shortUrl])).rows[0];
@@ -70,10 +75,13 @@ async function deleteUrl(req, res) {
         return res.status(StatusCodes.NOT_FOUND).send('Error: url identification is a integer number');
     }
     try {
-        const UrlUserId = (await connection.query('SELECT "userId" FROM "URLs" WHERE id=$1',
+        const UrlUserId = (await connection.query('SELECT "userId","url" FROM "URLs" WHERE id=$1',
             [urlId])).rows[0];
         if (!UrlUserId) {
             return res.status(StatusCodes.NOT_FOUND).send('Error: url id not found');
+        }
+        if(UrlUserId.url === null){
+            return res.status(StatusCodes.NOT_FOUND).send('Error: url id can`t be erased');
         }
         if (UrlUserId.userId !== userId) {
             return res.status(StatusCodes.UNAUTHORIZED).send('Error: url doesn`t belong to user');
