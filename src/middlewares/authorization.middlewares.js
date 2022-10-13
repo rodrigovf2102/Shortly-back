@@ -15,9 +15,9 @@ async function authorization(req,res,next){
         }
     } catch (error) {
         console.log(error.message);
-        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
-    next()
+    next();
 }
 
 export {authorization}
