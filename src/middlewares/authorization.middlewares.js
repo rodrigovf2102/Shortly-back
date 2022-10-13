@@ -8,8 +8,9 @@ async function authorization(req,res,next){
         return res.status(StatusCodes.UNAUTHORIZED).send('Error: empty token');
     }
     token = token.replace("Bearer ","");
+    let user;
     try {
-        const user = (await connection.query('SELECT * FROM sessions WHERE token=$1',[token])).rows[0];
+        user = (await connection.query('SELECT * FROM sessions WHERE token=$1',[token])).rows[0];
         if(!user){
             return res.status(StatusCodes.UNAUTHORIZED).send('Error: invalid token');
         }
@@ -17,6 +18,7 @@ async function authorization(req,res,next){
         console.log(error.message);
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
+    res.locals.userId = user.userId;
     next();
 }
 
