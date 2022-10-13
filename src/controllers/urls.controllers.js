@@ -12,16 +12,33 @@ async function urlShorten(req,res){
         ('INSERT INTO "URLs" (url,"shortUrl","userId","visitCount") VALUES ($1,$2,$3,$4)',
         [url,shortUrl,userId,0]);
 
-        const urlId = (await connection.query('SELECT id FROM "URLs" WHERE "shortUrl"=$1',[shortUrl])).rows[0].id
+        const urlId = (await connection.query('SELECT id FROM "URLs" WHERE "shortUrl"=$1',
+        [shortUrl])).rows[0].id
 
         await connection.query('INSERT INTO "userUrls" ("userId","urlId") VALUES ($1,$2)',
         [userId,urlId]);
 
-        return res.status(StatusCodes.CREATED).send(JSON.stringify({shortUrl:shortUrl}))
+        return res.status(StatusCodes.CREATED).send({shortUrl:shortUrl})
     } catch (error) {
         console.log(error.message);
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
-export {urlShorten}
+async function getUrls(req,res){
+    const {id} = req.params;
+    const urlId = Number(id);
+    if(isNaN(urlId) || urlId%1!==0){
+        return res.status(StatusCodes.NOT_FOUND).send('Error: url identification is a integer number');
+    }
+    const url = (await connection.query('SELECT * FROM "URLs" WHERE id=$1',[urlId])).rows[0];
+    if(!url){
+        return res.status(StatusCodes.NOT_FOUND).send('Error: url id not found');
+    }
+    delete url.userId;
+    delete url.visitCount;
+    return res.status(StatusCodes.ACCEPTED).send(url);
+
+}
+
+export {urlShorten, getUrls}
