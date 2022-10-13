@@ -49,15 +49,43 @@ async function redirectToUrl(req, res) {
     const { shortUrl } = req.params;
     try {
         const url = (await connection.query
-            ('SELECT url FROM "URLs" WHERE "shortUrl"=$1',[shortUrl])).rows[0].url;
-        if(!url){
+            ('SELECT * FROM "URLs" WHERE "shortUrl"=$1', [shortUrl])).rows[0];
+        if (!url) {
             return res.status(StatusCodes.NOT_FOUND).send('Error: url not found');
         }
-        return res.redirect(url);
+        await connection.query('UPDATE "URLs" SET "visitCount"=$1 WHERE "shortUrl"=$2',
+            [url.visitCount + 1, shortUrl]);
+        return res.redirect(url.url);
     } catch (error) {
         console.log(error.message);
-        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);       
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
 
-export { urlShorten, getUrls, redirectToUrl }
+async function deleteUrl(req, res) {
+    const { userId } = res.locals;
+    const { id } = req.params;
+    const urlId = Number(id);
+    if (isNaN(urlId) || urlId % 1 !== 0) {
+        return res.status(StatusCodes.NOT_FOUND).send('Error: url identification is a integer number');
+    }
+    try {
+        const UrlUserId = (await connection.query('SELECT "userId" FROM "URLs" WHERE id=$1',
+            [urlId])).rows[0];
+        if (!UrlUserId) {
+            return res.status(StatusCodes.NOT_FOUND).send('Error: url id not found');
+        }
+        if (UrlUserId.userId !== userId) {
+            return res.status(StatusCodes.UNAUTHORIZED).send('Error: url doesn`t belong to user');
+        }
+        await connection.query('DELETE FROM "userUrls" WHERE "urlId"=$1',[urlId]);
+        await connection.query('DELETE FROM "URLs" WHERE id=$1',[urlId]);
+        return res.status(StatusCodes.NO_CONTENT).send('Url deleted');
+    } catch (error) {
+        console.log(error.message);
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
+}
+
+export { urlShorten, getUrls, redirectToUrl, deleteUrl }
