@@ -85,7 +85,6 @@ async function deleteUrl(req, res) {
         console.log(error.message);
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
-
 }
 
 export { urlShorten, getUrls, redirectToUrl, deleteUrl }
