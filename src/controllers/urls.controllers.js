@@ -1,11 +1,12 @@
 import connection from '../db.js';
 import { StatusCodes } from 'http-status-codes';
-import { nanoid } from 'nanoid';
+//import { nanoid } from 'nanoid';
 
 async function urlShorten(req, res) {
     const { url } = req.body;
     const { userId } = res.locals;
-    const shortUrl = nanoid(8);
+    //const shortUrl = nanoid(8);
+    const shortUrl = 'lalala'
     try {
 
         await connection.query
