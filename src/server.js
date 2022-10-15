@@ -11,6 +11,6 @@ server.use(cors());
 server.use(express.json());
 server.use(router)
 
-const port = process.env.API_PORT;
+const port = process.env.PORT;
 
 server.listen(port,()=>console.log('Server ON in PORT:',port));
