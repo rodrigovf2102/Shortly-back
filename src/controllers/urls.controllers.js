@@ -50,7 +50,7 @@ async function getUrls(req, res) {
 async function redirectToUrl(req, res) {
     const { shortUrl } = req.params;
     console.log(req);
-    req.headers = {
+    res.headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, GET",
         "Access-Control-Allow-Headers": "*"
