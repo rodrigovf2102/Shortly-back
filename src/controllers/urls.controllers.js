@@ -50,12 +50,12 @@ async function getUrls(req, res) {
 async function redirectToUrl(req, res) {
     const { shortUrl } = req.params;
     console.log(req);
-    //req.headers = {
-     //       "Access-Control-Allow-Origin": "*",
-      //      "Access-Control-Allow-Methods": "POST, GET",
-       //     "Access-Control-Allow-Headers": "*"
-        //}
-    if(shortUrl === null){
+    req.headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET",
+        "Access-Control-Allow-Headers": "*"
+    }
+    if (shortUrl === null) {
         return res.status(StatusCodes.NOT_FOUND).send('Error: url not found');
     }
     try {
@@ -86,14 +86,14 @@ async function deleteUrl(req, res) {
         if (!UrlUserId) {
             return res.status(StatusCodes.NOT_FOUND).send('Error: url id not found');
         }
-        if(UrlUserId.url === null){
+        if (UrlUserId.url === null) {
             return res.status(StatusCodes.NOT_FOUND).send('Error: url id can`t be erased');
         }
         if (UrlUserId.userId !== userId) {
             return res.status(StatusCodes.UNAUTHORIZED).send('Error: url doesn`t belong to user');
         }
-        await connection.query('DELETE FROM "userUrls" WHERE "urlId"=$1',[urlId]);
-        await connection.query('DELETE FROM "URLs" WHERE id=$1',[urlId]);
+        await connection.query('DELETE FROM "userUrls" WHERE "urlId"=$1', [urlId]);
+        await connection.query('DELETE FROM "URLs" WHERE id=$1', [urlId]);
         return res.status(StatusCodes.NO_CONTENT).send('Url deleted');
     } catch (error) {
         console.log(error.message);
