@@ -49,6 +49,7 @@ async function getUrls(req, res) {
 
 async function redirectToUrl(req, res) {
     const { shortUrl } = req.params;
+    console.log(res);
     if(shortUrl === null){
         return res.status(StatusCodes.NOT_FOUND).send('Error: url not found');
     }
